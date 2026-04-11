@@ -90,12 +90,14 @@ public:
     // TODO: Agregar control concurrente
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&...  args){
+        scoped_lock lock(m_mtx); // Bloquea el mutex mientras itera
         ::ForEach(begin(), end(), func, std::forward<Args>(args)... );
     }
 
     // TODO: Agregar control concurrente
     template <typename Func, typename... Args>
     void ReverseForEach(Func func, Args &&...  args){
+        scoped_lock lock(m_mtx); // Igual que ForEach pero en sentido inverso
         ::ForEach(rbegin(), rend(), func, std::forward<Args>(args)... );
     }
 };
