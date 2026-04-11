@@ -74,6 +74,39 @@ ostream& operator<<(ostream& os, Vector<T>& v){
 // TODO: Implementar como PR
 template <typename T>
 istream& operator>>(istream& is, Vector<T>& v){
+    char c;
+    // Verificamos que la entrada comience con '[' y termine con ']'
+    if(!(is >> c) || c != '['){
+        is.setstate(ios::failbit);
+        return is;
+    }
+    if((is >> ws).peek() == ']'){
+        is >> c;
+        return is;
+    }
+
+    do{
+        T data;
+
+        if constexpr(is_same_v<T, string>){
+            // Para string: leer caracter a caracter hasta ',' o ']'
+            string token;
+            char   ch;
+            while(is.get(ch) && ch != ',' && ch != ']')
+                token += ch;
+            c    = ch;
+            data = token;
+        }else{
+            // Para numericos: >> ya se detiene en ',' o ']'
+            if(!(is >> data)){
+                is.setstate(ios::failbit);
+                return is;
+            }
+            is >> c; // consume ',' o ']'
+        }
+
+        v.push_back(data);
+    }while(c == ',');
     return is;
 }
 

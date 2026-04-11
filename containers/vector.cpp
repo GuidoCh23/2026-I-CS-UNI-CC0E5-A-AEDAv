@@ -33,4 +33,8 @@ void DemoVector(){
     of << v2 << endl;
     // of.close();
     
+    // Prueba del operator>>
+    Vector<string> v3(5);
+    cin >> v3;
+    cout << v3 << endl;
 }
