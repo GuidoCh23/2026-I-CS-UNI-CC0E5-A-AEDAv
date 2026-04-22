@@ -19,7 +19,10 @@ class LinkedListForwardIterator : public general_iterator<Container, LinkedListF
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    MySelf operator++(){ this->m_pNode = this->m_pNode->getNext(); return *this; }
+    MySelf operator++(){
+        this->m_pNode = this->m_pNode->getNext();
+        return *this;
+    }
 };
 
 // Linked List Node
@@ -134,12 +137,9 @@ LinkedList<Trait>::LinkedList(const LinkedList &other){
 // t2-move constructor: transfiere propiedad de los nodos
 template <typename Trait>
 LinkedList<Trait>::LinkedList(LinkedList &&other){
-    m_pRoot = other.m_pRoot;
-    m_tail  = other.m_tail;
-    m_size  = other.m_size;
-    other.m_pRoot = nullptr;
-    other.m_tail  = nullptr;
-    other.m_size  = 0;
+    m_pRoot = exchange(other.m_pRoot, nullptr);
+    m_tail  = exchange(other.m_tail,  nullptr);
+    m_size  = exchange(other.m_size,  0);
 }
 
 template <typename Trait>
@@ -189,6 +189,7 @@ LinkedList<Trait>& LinkedList<Trait>::operator=(LinkedList &&other){
 // t3-destructor seguro: recorre y elimina cada nodo
 template <typename Trait>
 LinkedList<Trait>::~LinkedList(){
+    unique_lock<shared_mutex> lock(m_mtx);
     Node *curr = m_pRoot;
     while(curr){
         Node *next = curr->getNext();
