@@ -103,7 +103,7 @@ public:
         while (is >> ch && ch != ']') {
             if (ch == '(') {
                 if (is >> val >> comma >> ref >> close && comma == ',' && close == ')')
-                    list.insert(val, ref);
+                    list.link_push_back(val, ref); // lock ya tomado, no pasar por insert
             }
         }
         return is;
