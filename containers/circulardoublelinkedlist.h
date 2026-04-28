@@ -103,6 +103,17 @@ public:
     backward_iterator rbegin() { return backward_iterator(this, this->m_tail); }
     backward_iterator rend()   { return backward_iterator(this, nullptr); }
 
+    bool contains(const value_type &value) const {
+        unique_lock<shared_mutex> lock(this->m_mtx);
+        if (!this->m_pRoot) return false;
+        Node* curr = this->m_pRoot;
+        do {
+            if (curr->getData() == value) return true;
+            curr = curr->getNext();
+        } while (curr != this->m_pRoot);
+        return false;
+    }
+
     template <typename Func, typename... Args>
     void ReverseForEach(Func func, Args&&... args) {
         unique_lock<shared_mutex> lock(this->m_mtx);

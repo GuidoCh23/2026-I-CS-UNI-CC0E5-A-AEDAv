@@ -74,10 +74,17 @@ void CircularLinkedListDemo() {
     CircularLinkedList<AscendingCLLTrait<T1>> list;
     DemoList(list);
 
-    cout << "Foreach: ";
+    cout << "Foreach:        ";
     for (auto& x : list)
         cout << x << " ";
     cout << endl;
+
+    cout << "ReverseForEach: ";
+    list.ReverseForEach([](T1& x){ cout << x << " "; });
+    cout << endl;
+
+    cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
+    cout << "contains(99): " << boolalpha << list.contains(99) << endl;
 
     CircularLinkedList<DescendingCLLTrait<T1>> desc;
     DemoList(desc);
@@ -123,6 +130,9 @@ void CircularDoubleLinkedListDemo() {
     cout << "ReverseForEach: ";
     list.ReverseForEach([](T1& x){ cout << x << " "; });
     cout << endl;
+
+    cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
+    cout << "contains(99): " << boolalpha << list.contains(99) << endl;
 
     CircularDoubleLinkedList<DescendingCDLLTrait<T1>> desc;
     DemoList(desc);

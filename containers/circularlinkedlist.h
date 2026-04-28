@@ -1,6 +1,7 @@
 #ifndef __CIRCULARLINKEDLIST_H__
 #define __CIRCULARLINKEDLIST_H__
 
+#include <vector>
 #include "linkedlist.h"
 
 template <typename T>
@@ -72,6 +73,32 @@ public:
 
     forward_iterator begin() { return forward_iterator(this, this->m_pRoot); }
     forward_iterator end()   { return forward_iterator(this, nullptr); }
+
+    bool contains(const value_type &value) const {
+        unique_lock<shared_mutex> lock(this->m_mtx);
+        if (!this->m_pRoot) return false;
+        Node* curr = this->m_pRoot;
+        do {
+            if (curr->getData() == value) return true;
+            curr = curr->getNext();
+        } while (curr != this->m_pRoot);
+        return false;
+    }
+
+    // recorre en reversa recolectando nodos (CLL no tiene prev)
+    template <typename Func, typename... Args>
+    void ReverseForEach(Func func, Args&&... args) {
+        unique_lock<shared_mutex> lock(this->m_mtx);
+        if (!this->m_pRoot) return;
+        vector<Node*> nodes;
+        Node* curr = this->m_pRoot;
+        do {
+            nodes.push_back(curr);
+            curr = curr->getNext();
+        } while (curr != this->m_pRoot);
+        for (auto it = nodes.rbegin(); it != nodes.rend(); ++it)
+            func((*it)->getDataRef(), std::forward<Args>(args)...);
+    }
 
     friend ostream& operator<<(ostream& os, const CircularLinkedList& list) {
         unique_lock<shared_mutex> lock(list.m_mtx);
