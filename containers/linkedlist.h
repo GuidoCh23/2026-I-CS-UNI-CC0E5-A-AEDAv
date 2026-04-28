@@ -10,6 +10,7 @@
 #include <shared_mutex> 
 #include <utility>
 #include <tuple>
+#include <type_traits>
 #include "general_iterator.h"
 #include "util.h"
 #include "../types.h"
@@ -33,10 +34,11 @@ public:
 };
 
 // Linked List Node
-template <typename T, typename NodeType = LLNode<T>>
+// NodeType=void significa "usarse a si mismo como nodo" (evita auto-referencia en parametro default)
+template <typename T, typename NodeType = void>
 class LLNode{
 protected:
-    using Node = NodeType;
+    using Node = conditional_t<is_void_v<NodeType>, LLNode<T>, NodeType>;
 private:
     T   m_data;
     Ref m_ref;
@@ -57,20 +59,12 @@ public:
     void   setNext(Node *next) { m_next = next; }
 };
 
-// Traits de Ordenamiento
+// Tarea: Adaptar Traits a BaseTrait (LL)
 template <typename T>
-struct AscendingLinkedListTrait{
-    using value_type = T;
-    using Node = LLNode<T>;
-    using Comp = less<T>;
-};
+struct AscendingLinkedListTrait : BaseTrait<T, less<T>, LLNode<T>> {};
 
 template <typename T>
-struct DescendingLinkedListTrait{
-    using value_type = T;
-    using Node = LLNode<T>;
-    using Comp = greater<T>;
-};
+struct DescendingLinkedListTrait : BaseTrait<T, greater<T>, LLNode<T>> {};
 
 // Contenedor Principal LinkedList
 template <typename Trait>
@@ -84,12 +78,14 @@ public:
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     friend forward_iterator;
 
-private:
+protected:
     Node *m_pRoot = nullptr;
     Node *m_tail = nullptr;
     size_t m_size = 0;
     Comp   m_comp;
     mutable shared_mutex m_mtx;
+
+private:
     void internal_insert(Node* &pPrev, const value_type &value, Ref ref);
 
 public:
