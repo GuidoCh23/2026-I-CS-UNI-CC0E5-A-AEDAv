@@ -5,6 +5,7 @@
 #include "../types.h"
 #include "linkedlist.h"
 #include "doublelinkedlist.h"
+#include "circularlinkedlist.h"
 
 using namespace std;
 
@@ -67,7 +68,18 @@ void DoubleLinkedListDemo() {
 }
 
 void CircularLinkedListDemo() {
-    // pendiente de implementacion
+    cout << "\nCircular Linked List Demo" << endl;
+
+    CircularLinkedList<AscendingCLLTrait<T1>> list;
+    DemoList(list);
+
+    cout << "Foreach: ";
+    for (auto& x : list)
+        cout << x << " ";
+    cout << endl;
+
+    CircularLinkedList<DescendingCLLTrait<T1>> desc;
+    DemoList(desc);
 }
 
 void TestConcurrencia() {
