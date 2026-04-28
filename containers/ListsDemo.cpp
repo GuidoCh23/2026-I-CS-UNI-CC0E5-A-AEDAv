@@ -6,6 +6,7 @@
 #include "linkedlist.h"
 #include "doublelinkedlist.h"
 #include "circularlinkedlist.h"
+#include "circulardoublelinkedlist.h"
 
 using namespace std;
 
@@ -108,11 +109,31 @@ void TestOperators() {
     cout << "list[0]: " << list[0] << "  list[2]: " << list[2] << endl;
 }
 
+void CircularDoubleLinkedListDemo() {
+    cout << "\nCircular Double Linked List Demo" << endl;
+
+    CircularDoubleLinkedList<AscendingCDLLTrait<T1>> list;
+    DemoList(list);
+
+    cout << "Foreach fwd:    ";
+    for (auto& x : list)
+        cout << x << " ";
+    cout << endl;
+
+    cout << "ReverseForEach: ";
+    list.ReverseForEach([](T1& x){ cout << x << " "; });
+    cout << endl;
+
+    CircularDoubleLinkedList<DescendingCDLLTrait<T1>> desc;
+    DemoList(desc);
+}
+
 void ListsDemo() {
     TestBasicos();
     LinkedListDemo();
     DoubleLinkedListDemo();
     CircularLinkedListDemo();
+    CircularDoubleLinkedListDemo();
     TestConcurrencia();
     TestOperators();
 }
