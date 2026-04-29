@@ -74,6 +74,20 @@ private:
     void link_push_back(const value_type &value, Ref ref);
     // rompe el circulo y libera todos los nodos
     void unlink_all();
+    // insercion ordenada recursiva sin lock — patron circular + prev
+    void internal_insert(Node* curr, const value_type &value, Ref ref) {
+        if (curr->getNext() == this->m_pRoot ||
+            this->m_comp(value, curr->getNext()->getDataRef())) {
+            Node* next = curr->getNext();
+            Node* n = new Node(value, ref, next, curr);
+            curr->setNext(n);
+            next->setPrev(n);
+            if (curr == this->m_tail) this->m_tail = n;
+            this->m_size++;
+            return;
+        }
+        internal_insert(curr->getNext(), value, ref);
+    }
 
 public:
     CircularDoubleLinkedList() : Base() {}
@@ -316,7 +330,6 @@ void CircularDoubleLinkedList<Trait>::insert(const value_type &value, Ref ref) {
         this->m_size++;
         return;
     }
-    // insertar al frente
     if (this->m_comp(value, this->m_pRoot->getDataRef())) {
         Node* n = new Node(value, ref, this->m_pRoot, this->m_tail);
         this->m_pRoot->setPrev(n);
@@ -325,18 +338,7 @@ void CircularDoubleLinkedList<Trait>::insert(const value_type &value, Ref ref) {
         this->m_size++;
         return;
     }
-    // buscar posicion
-    Node* prev = this->m_pRoot;
-    while (prev->getNext() != this->m_pRoot &&
-           !this->m_comp(value, prev->getNext()->getDataRef()))
-        prev = prev->getNext();
-    Node* next = prev->getNext();
-    Node* n = new Node(value, ref, next, prev);
-    prev->setNext(n);
-    next->setPrev(n);
-    if (prev == this->m_tail)
-        this->m_tail = n;
-    this->m_size++;
+    internal_insert(this->m_pRoot, value, ref);
 }
 
 #endif // __CIRCULARDOUBLELINKEDLIST_H__

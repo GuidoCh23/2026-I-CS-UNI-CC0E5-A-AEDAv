@@ -78,6 +78,18 @@ private:
     void link_push_back(const value_type &value, Ref ref);
     // libera todos los nodos
     void unlink_all();
+    // insercion ordenada recursiva
+    void internal_insert(Node* &curr, Node* prev, const value_type &value, Ref ref) {
+        if (!curr || this->m_comp(value, curr->getDataRef())) {
+            Node* n = new Node(value, ref, curr, prev);
+            if (curr) curr->setPrev(n);
+            else      this->m_tail = n;
+            curr = n;
+            this->m_size++;
+            return;
+        }
+        internal_insert(curr->getNextRef(), curr, value, ref);
+    }
 
 public:
     DoubleLinkedList() : Base() {}
@@ -283,18 +295,7 @@ DoubleLinkedList<Trait>::pop_back() {
 template <typename Trait>
 void DoubleLinkedList<Trait>::insert(const value_type &value, Ref ref) {
     unique_lock<shared_mutex> lock(this->m_mtx);
-    Node* prev = nullptr;
-    Node* curr = this->m_pRoot;
-    while (curr && !this->m_comp(value, curr->getDataRef())) {
-        prev = curr;
-        curr = curr->getNext();
-    }
-    Node* n = new Node(value, ref, curr, prev);
-    if (prev) prev->setNext(n);
-    else this->m_pRoot = n;
-    if (curr) curr->setPrev(n);
-    else this->m_tail = n;
-    this->m_size++;
+    internal_insert(this->m_pRoot, nullptr, value, ref);
 }
 
 #endif // __DOUBLELINKEDLIST_H__
