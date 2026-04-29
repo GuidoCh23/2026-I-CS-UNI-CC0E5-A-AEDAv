@@ -103,7 +103,6 @@ public:
     backward_iterator rbegin() { return backward_iterator(this, this->m_tail); }
     backward_iterator rend()   { return backward_iterator(this, nullptr); }
 
-    // Mejora libre #1: recorrer en reversa
     template <typename Func, typename... Args>
     void ReverseForEach(Func func, Args&&... args) {
         unique_lock<shared_mutex> lock(this->m_mtx);
@@ -117,6 +116,20 @@ public:
         for (Node* curr = this->m_pRoot; curr; curr = curr->getNext())
             if (curr->getData() == value) return true;
         return false;
+    }
+
+    // Mejora libre #1: invierte la lista intercambiando next y prev de cada nodo
+    void reverse() {
+        unique_lock<shared_mutex> lock(this->m_mtx);
+        if (this->m_size <= 1) return;
+        Node* curr = this->m_pRoot;
+        while (curr) {
+            Node* tmp = curr->getNext();
+            curr->setNext(curr->getPrev());
+            curr->setPrev(tmp);
+            curr = tmp;
+        }
+        std::swap(this->m_pRoot, this->m_tail);
     }
 
     // Tarea: operator<<

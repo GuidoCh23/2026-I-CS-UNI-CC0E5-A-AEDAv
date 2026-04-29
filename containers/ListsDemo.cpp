@@ -64,6 +64,12 @@ void DoubleLinkedListDemo() {
     cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
     cout << "contains(99): " << boolalpha << list.contains(99) << endl;
 
+    list.reverse();
+    cout << "reverse:        ";
+    for (auto& x : list)
+        cout << x << " ";
+    cout << endl;
+
     DoubleLinkedList<DescendingDLLTrait<T1>> desc;
     DemoList(desc);
 }
