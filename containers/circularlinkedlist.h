@@ -74,15 +74,18 @@ public:
     forward_iterator begin() { return forward_iterator(this, this->m_pRoot); }
     forward_iterator end()   { return forward_iterator(this, nullptr); }
 
-    bool contains(const value_type &value) const {
+    // devuelve el indice de la primera ocurrencia o -1 si no existe
+    int contains(const value_type &value) const {
         unique_lock<shared_mutex> lock(this->m_mtx);
-        if (!this->m_pRoot) return false;
+        if (!this->m_pRoot) return -1;
+        int index = 0;
         Node* curr = this->m_pRoot;
         do {
-            if (curr->getData() == value) return true;
+            if (curr->getData() == value) return index;
             curr = curr->getNext();
+            ++index;
         } while (curr != this->m_pRoot);
-        return false;
+        return -1;
     }
 
     // recorre en reversa recolectando nodos (CLL no tiene prev)

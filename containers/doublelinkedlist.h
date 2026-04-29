@@ -110,12 +110,13 @@ public:
             func(*it, std::forward<Args>(args)...);
     }
 
-    // Mejora libre #2: verificar existencia de un valor en la lista
-    bool contains(const value_type &value) const {
+    // Mejora libre #2: devuelve el indice de la primera ocurrencia o -1 si no existe
+    int contains(const value_type &value) const {
         unique_lock<shared_mutex> lock(this->m_mtx);
-        for (Node* curr = this->m_pRoot; curr; curr = curr->getNext())
-            if (curr->getData() == value) return true;
-        return false;
+        int index = 0;
+        for (Node* curr = this->m_pRoot; curr; curr = curr->getNext(), ++index)
+            if (curr->getData() == value) return index;
+        return -1;
     }
 
     // Mejora libre #1: invierte la lista intercambiando next y prev de cada nodo

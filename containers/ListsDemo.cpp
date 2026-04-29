@@ -1,5 +1,6 @@
 #include <iostream>
-#include <sstream>
+#include <fstream>
+#include <string>
 #include <thread>
 
 #include "../types.h"
@@ -18,12 +19,6 @@ void DemoList(Container& list) {
     list.insert(4,  45);
     list.insert(35, 55);
     cout << list << endl;
-
-    stringstream ss;
-    ss << list;
-    Container list2;
-    ss >> list2;
-    cout << list2 << endl;
 }
 
 void TestBasicos() {
@@ -61,8 +56,8 @@ void DoubleLinkedListDemo() {
     list.ReverseForEach([](T1& x){ cout << x << " "; });
     cout << endl;
 
-    cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
-    cout << "contains(99): " << boolalpha << list.contains(99) << endl;
+    cout << "contains(8):  " << list.contains(8)  << endl;
+    cout << "contains(99): " << list.contains(99) << endl;
 
     list.reverse();
     cout << "reverse:        ";
@@ -89,10 +84,32 @@ void CircularLinkedListDemo() {
     list.ReverseForEach([](T1& x){ cout << x << " "; });
     cout << endl;
 
-    cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
-    cout << "contains(99): " << boolalpha << list.contains(99) << endl;
+    cout << "contains(8):  " << list.contains(8)  << endl;
+    cout << "contains(99): " << list.contains(99) << endl;
 
     CircularLinkedList<DescendingCLLTrait<T1>> desc;
+    DemoList(desc);
+}
+
+void CircularDoubleLinkedListDemo() {
+    cout << "\nCircular Double Linked List Demo" << endl;
+
+    CircularDoubleLinkedList<AscendingCDLLTrait<T1>> list;
+    DemoList(list);
+
+    cout << "Foreach fwd:    ";
+    for (auto& x : list)
+        cout << x << " ";
+    cout << endl;
+
+    cout << "ReverseForEach: ";
+    list.ReverseForEach([](T1& x){ cout << x << " "; });
+    cout << endl;
+
+    cout << "contains(8):  " << list.contains(8)  << endl;
+    cout << "contains(99): " << list.contains(99) << endl;
+
+    CircularDoubleLinkedList<DescendingCDLLTrait<T1>> desc;
     DemoList(desc);
 }
 
@@ -116,32 +133,9 @@ void TestConcurrencia() {
 void TestOperators() {
     cout << "\nTest de Operadores" << endl;
     LinkedList<AscendingLinkedListTrait<T1>> list;
-    stringstream input("[(10,100),(20,200),(30,300)]");
-    input >> list;
-    cout << "Leida:   " << list << endl;
+    list.insert(10, 100); list.insert(20, 200); list.insert(30, 300);
+    cout << "Lista:   " << list << endl;
     cout << "list[0]: " << list[0] << "  list[2]: " << list[2] << endl;
-}
-
-void CircularDoubleLinkedListDemo() {
-    cout << "\nCircular Double Linked List Demo" << endl;
-
-    CircularDoubleLinkedList<AscendingCDLLTrait<T1>> list;
-    DemoList(list);
-
-    cout << "Foreach fwd:    ";
-    for (auto& x : list)
-        cout << x << " ";
-    cout << endl;
-
-    cout << "ReverseForEach: ";
-    list.ReverseForEach([](T1& x){ cout << x << " "; });
-    cout << endl;
-
-    cout << "contains(8):  " << boolalpha << list.contains(8)  << endl;
-    cout << "contains(99): " << boolalpha << list.contains(99) << endl;
-
-    CircularDoubleLinkedList<DescendingCDLLTrait<T1>> desc;
-    DemoList(desc);
 }
 
 void ListsDemo() {
