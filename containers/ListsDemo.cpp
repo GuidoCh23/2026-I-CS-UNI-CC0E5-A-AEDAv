@@ -20,6 +20,7 @@ void DemoList(Container& list){
 }
 
 void LinkedListDemo(){
+    cout << "LINKED LIST:" << endl;
     LinkedList<AscendingLinkedListTrait<T1>> list;
     DemoList(list);
 
@@ -29,6 +30,7 @@ void LinkedListDemo(){
 }
 
 void DoubleLinkedListDemo(){
+    cout << "DOUBLE LINKED LIST:" << endl;
     DoubleLinkedList<AscendingDLLTrait<T1>> list;
     DemoList(list);
 
@@ -47,6 +49,7 @@ void DoubleLinkedListDemo(){
 }
 
 void CircularLinkedListDemo(){
+    cout << "CIRCULAR LINKED LIST:" << endl;
     CircularLinkedList<AscendingCLLTrait<T1>> list;
     DemoList(list);
 
@@ -61,6 +64,7 @@ void CircularLinkedListDemo(){
 }
 
 void CircularDoubleLinkedListDemo(){
+    cout << "CIRCULAR DOUBLE LINKED LIST:" << endl;
     CircularDoubleLinkedList<AscendingCDLLTrait<T1>> list;
     DemoList(list);
 

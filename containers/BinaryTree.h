@@ -39,7 +39,7 @@ public:
     value_type& operator*() { return m_nodes[m_index]->m_data; }
 };
 
-// BinaryTree: forward iterator (inorder/preorder/postorder) — incrementa m_index
+// BinaryTree: forward iterator (inorder/preorder/postorder) - incrementa m_index
 template<typename Node, typename value_type>
 class BTForwardIterator : public BTIteratorBase<Node, value_type> {
 public:
@@ -47,7 +47,7 @@ public:
     BTForwardIterator& operator++() { ++this->m_index; return *this; }
 };
 
-// BinaryTree: backward iterator (inorder/preorder/postorder) — decrementa m_index
+// BinaryTree: backward iterator (inorder/preorder/postorder) - decrementa m_index
 template<typename Node, typename value_type>
 class BTBackwardIterator : public BTIteratorBase<Node, value_type> {
 public:
@@ -100,7 +100,7 @@ protected:
     Compare m_comp;
     mutable shared_mutex m_mtx;
 
-    // BinaryTree: Destructor Seguro — libera nodos recursivamente
+    // BinaryTree: Destructor Seguro - libera nodos recursivamente
     virtual void internal_clear(Node* pNode) {
         if (!pNode) return;
         internal_clear(pNode->m_pChild[0]);
@@ -108,7 +108,7 @@ protected:
         delete pNode;
     }
 
-    // BinaryTree: Constructor copia — copia el subarbol recursivamente
+    // BinaryTree: Constructor copia - copia el subarbol recursivamente
     virtual Node* internal_copy(Node* pNode) {
         if (!pNode) return nullptr;
         Node* n = new Node(pNode->m_data, pNode->m_ref);
@@ -117,15 +117,15 @@ protected:
         return n;
     }
 
-    // Codigo hecho en clase — adaptado con Ref y branch corregido para orden ascendente
+    // Codigo hecho en clase - adaptado con Ref y branch corregido para orden ascendente
     virtual void internal_insert(Node*& pNode, const value_type& data, Ref ref) {
         if (!pNode) { pNode = new Node(data, ref); return; }
-        // m_comp(current, new): true → new es mayor → va a la derecha (branch 1)
+        // m_comp(current, new): true -> new es mayor -> va a la derecha (branch 1)
         auto branch = m_comp(pNode->m_data, data);
         internal_insert(pNode->m_pChild[branch], data, ref);
     }
 
-    // BinaryTree: Otras mejoras libres #1 — busqueda BST con equivalencia generica
+    // BinaryTree: Otras mejoras libres #1 - busqueda BST con equivalencia generica
     virtual Node* internal_search(Node* pNode, const value_type& val) const {
         if (!pNode) return nullptr;
         if (!m_comp(pNode->m_data, val) && !m_comp(val, pNode->m_data)) return pNode;
@@ -139,7 +139,7 @@ protected:
                        internal_height(pNode->m_pChild[1]));
     }
 
-    // BinaryTree: forward/backward iterator (inorder) — recorrido LNR
+    // BinaryTree: forward/backward iterator (inorder) - recorrido LNR
     void fill_inorder(Node* pNode, Stack<Node*>& s) const {
         if (!pNode) return;
         fill_inorder(pNode->m_pChild[0], s);
@@ -147,7 +147,7 @@ protected:
         fill_inorder(pNode->m_pChild[1], s);
     }
 
-    // BinaryTree: forward/backward iterator (preorder) — recorrido NLR
+    // BinaryTree: forward/backward iterator (preorder) - recorrido NLR
     void fill_preorder(Node* pNode, Stack<Node*>& s) const {
         if (!pNode) return;
         s.push(pNode);
@@ -155,7 +155,7 @@ protected:
         fill_preorder(pNode->m_pChild[1], s);
     }
 
-    // BinaryTree: forward/backward iterator (postorder) — recorrido LRN
+    // BinaryTree: forward/backward iterator (postorder) - recorrido LRN
     void fill_postorder(Node* pNode, Stack<Node*>& s) const {
         if (!pNode) return;
         fill_postorder(pNode->m_pChild[0], s);
@@ -172,7 +172,7 @@ protected:
         return View(fwd_b, fwd_e, bwd_b, bwd_e);
     }
 
-    // BinaryTree: Otras mejoras libres #2 — impresion visual indentada (arbol rotado 90°)
+    // BinaryTree: Otras mejoras libres #2 - impresion visual indentada
     void internal_print(Node* pNode, ostream& os, int depth) const {
         if (!pNode) return;
         internal_print(pNode->m_pChild[1], os, depth + 1);
@@ -203,7 +203,7 @@ public:
     // BinaryTree: Destructor Seguro
     virtual ~BinaryTree() { clear(); }
 
-    // BinaryTree: Concurrency in all (unique_lock)
+    // BinaryTree: Concurrencia
     void clear() {
         unique_lock<shared_mutex> lock(m_mtx);
         internal_clear(m_pRoot);
@@ -211,8 +211,8 @@ public:
         m_size  = 0;
     }
 
-    // BinaryTree: Concurrency in all (unique_lock)
-    void insert(const value_type& data, Ref ref) {
+    // BinaryTree: Concurrencia
+    virtual void insert(const value_type& data, Ref ref) {
         unique_lock<shared_mutex> lock(m_mtx);
         internal_insert(m_pRoot, data, ref);
         ++m_size;
@@ -270,7 +270,7 @@ public:
         return make_view(move(s));
     }
 
-    // BinaryTree: ToString — formato [(val,ref),...] inorder
+    // BinaryTree: ToString - formato [(val,ref),...] inorder
     string toString() const {
         shared_lock<shared_mutex> lock(m_mtx);
         ostringstream oss;
@@ -285,7 +285,7 @@ public:
         return oss.str();
     }
 
-    // BinaryTree: Otras mejoras libres #2 — impresion visual del arbol
+    // BinaryTree: Otras mejoras libres #2 - impresion visual del arbol
     void printTree(ostream& os) const {
         shared_lock<shared_mutex> lock(m_mtx);
         internal_print(m_pRoot, os, 0);
