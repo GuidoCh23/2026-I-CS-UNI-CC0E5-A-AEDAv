@@ -40,7 +40,7 @@ public:
         return forward_iterator(const_cast<MySelf *>(this), nullptr, this->m_pRoot);
     }
 
-    // Concurrency in all (unique_lock)
+    // Concurrencia
     void push_back(value_type value, Ref ref) override {
         unique_lock<shared_mutex> lock(this->m_mtx);
         Node *newNode = new Node(value, ref);
@@ -74,7 +74,9 @@ public:
         if (!this->m_pRoot) throw runtime_error("La lista esta vacia");
         Node *temp   = this->m_pRoot;
         auto  result = make_tuple(temp->getData(), temp->getRef());
-        if (this->m_size == 1) { this->m_pRoot = this->m_tail = nullptr; }
+        if (this->m_size == 1){
+            this->m_pRoot = this->m_tail = nullptr;
+        }
         else {
             this->m_pRoot = temp->getNext();
             this->m_tail->setNext(this->m_pRoot);

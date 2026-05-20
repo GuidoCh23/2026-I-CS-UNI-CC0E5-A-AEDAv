@@ -11,8 +11,7 @@ class DLLNode : public LLNode<T, DLLNode<T>> {
 public:
     using value_type = T;
     DLLNode() : LLNode<T, DLLNode<T>>(), m_pPrev(nullptr) {}
-    DLLNode(T data, Ref ref, DLLNode *next = nullptr, DLLNode *prev = nullptr)
-        : LLNode<T, DLLNode<T>>(data, ref, next), m_pPrev(prev) {}
+    DLLNode(T data, Ref ref, DLLNode *next = nullptr, DLLNode *prev = nullptr): LLNode<T, DLLNode<T>>(data, ref, next), m_pPrev(prev) {}
 
     DLLNode* getPrev() const       { return m_pPrev; }
     void     setPrev(DLLNode *prev) { m_pPrev = prev; }
@@ -50,7 +49,7 @@ public:
 
     DoubleLinkedList() : LinkedList<Trait>() {}
 
-    // Concurrency in all (unique_lock)
+    // Concurrencia
     void push_back(value_type value, Ref ref) override {
         unique_lock<shared_mutex> lock(this->m_mtx);
         Node *newNode = new Node(value, ref);
@@ -98,7 +97,7 @@ public:
         return result;
     }
 
-    // Concurrency in all (unique_lock); mantiene m_pPrev en cada nodo
+    // Concurrencia, mantiene m_pPrev en cada nodo
     void insert(const value_type &value, Ref ref) override {
         unique_lock<shared_mutex> lock(this->m_mtx);
         Node *newNode = new Node(value, ref);
@@ -124,7 +123,7 @@ public:
     backward_iterator rbegin() { return backward_iterator(this, this->m_tail); }
     backward_iterator rend()   { return backward_iterator(this, nullptr); }
 
-    // Concurrency in all (unique_lock)
+    // Concurrencia
     template <typename Func, typename... Args>
     void ReverseForEach(Func func, Args &&...args) {
         unique_lock<shared_mutex> lock(this->m_mtx);

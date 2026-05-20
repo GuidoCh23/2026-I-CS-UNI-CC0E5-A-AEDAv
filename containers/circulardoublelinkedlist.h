@@ -33,7 +33,7 @@ public:
     CDLLBackwardIterator(Container *c, Node *node, Node *root) : Parent(c, node, root) {}
     MySelf &operator++() {
         if (this->m_pNode) {
-            Node *prev    = this->m_pNode->getPrev();
+            Node *prev = this->m_pNode->getPrev();
             this->m_pNode = (prev == this->m_pRoot) ? nullptr : prev;
         }
         return *this;
@@ -66,16 +66,19 @@ public:
         return backward_iterator(this, nullptr, this->m_tail);
     }
 
-    // Concurrency in all (unique_lock)
+    // Concurrencia
     void push_back(value_type value, Ref ref) override {
         unique_lock<shared_mutex> lock(this->m_mtx);
         Node *newNode = new Node(value, ref);
         if (this->m_size == 0) {
             this->m_pRoot = this->m_tail = newNode;
-            newNode->setNext(newNode); newNode->setPrev(newNode);
+            newNode->setNext(newNode); 
+            newNode->setPrev(newNode);
         } else {
-            newNode->setNext(this->m_pRoot); newNode->setPrev(this->m_tail);
-            this->m_tail->setNext(newNode);  this->m_pRoot->setPrev(newNode);
+            newNode->setNext(this->m_pRoot); 
+            newNode->setPrev(this->m_tail);
+            this->m_tail->setNext(newNode);  
+            this->m_pRoot->setPrev(newNode);
             this->m_tail = newNode;
         }
         this->m_size++;
@@ -86,10 +89,13 @@ public:
         Node *newNode = new Node(value, ref);
         if (this->m_size == 0) {
             this->m_pRoot = this->m_tail = newNode;
-            newNode->setNext(newNode); newNode->setPrev(newNode);
+            newNode->setNext(newNode); 
+            newNode->setPrev(newNode);
         } else {
-            newNode->setNext(this->m_pRoot); newNode->setPrev(this->m_tail);
-            this->m_pRoot->setPrev(newNode); this->m_tail->setNext(newNode);
+            newNode->setNext(this->m_pRoot); 
+            newNode->setPrev(this->m_tail);
+            this->m_pRoot->setPrev(newNode); 
+            this->m_tail->setNext(newNode);
             this->m_pRoot = newNode;
         }
         this->m_size++;
@@ -100,7 +106,9 @@ public:
         if (!this->m_pRoot) throw runtime_error("La lista esta vacia");
         Node *temp   = this->m_pRoot;
         auto  result = make_tuple(temp->getData(), temp->getRef());
-        if (this->m_size == 1) { this->m_pRoot = this->m_tail = nullptr; }
+        if (this->m_size == 1){ 
+            this->m_pRoot = this->m_tail = nullptr; 
+        }
         else {
             this->m_pRoot = temp->getNext();
             this->m_pRoot->setPrev(this->m_tail);
@@ -116,7 +124,9 @@ public:
         if (!this->m_pRoot) throw runtime_error("La lista esta vacia");
         Node *temp   = this->m_tail;
         auto  result = make_tuple(temp->getData(), temp->getRef());
-        if (this->m_size == 1) { this->m_pRoot = this->m_tail = nullptr; }
+        if (this->m_size == 1){
+            this->m_pRoot = this->m_tail = nullptr;
+        }
         else {
             this->m_tail = temp->getPrev();
             this->m_tail->setNext(this->m_pRoot);
@@ -133,10 +143,13 @@ public:
         Node *newNode = new Node(value, ref);
         if (this->m_size == 0) {
             this->m_pRoot = this->m_tail = newNode;
-            newNode->setNext(newNode); newNode->setPrev(newNode);
+            newNode->setNext(newNode); 
+            newNode->setPrev(newNode);
         } else if (this->m_comp(value, this->m_pRoot->getDataRef())) {
-            newNode->setNext(this->m_pRoot); newNode->setPrev(this->m_tail);
-            this->m_pRoot->setPrev(newNode); this->m_tail->setNext(newNode);
+            newNode->setNext(this->m_pRoot); 
+            newNode->setPrev(this->m_tail);
+            this->m_pRoot->setPrev(newNode); 
+            this->m_tail->setNext(newNode);
             this->m_pRoot = newNode;
         } else {
             Node *act = this->m_pRoot;
@@ -144,8 +157,10 @@ public:
                    !this->m_comp(value, act->getNext()->getDataRef()))
                 act = act->getNext();
             Node *following = act->getNext();
-            newNode->setNext(following); newNode->setPrev(act);
-            act->setNext(newNode);       following->setPrev(newNode);
+            newNode->setNext(following); 
+            newNode->setPrev(act);
+            act->setNext(newNode);       
+            following->setPrev(newNode);
             if (act == this->m_tail) this->m_tail = newNode;
         }
         this->m_size++;

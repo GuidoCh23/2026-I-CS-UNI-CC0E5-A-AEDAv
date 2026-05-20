@@ -80,7 +80,13 @@ private:
     void    resize();
 public:
     Vector(size_t capacity = 10);
+    Vector(const Vector& other);
+    Vector(Vector&& other) noexcept;
     virtual ~Vector();
+    Vector& operator=(const Vector& other);
+    Vector& operator=(Vector&& other) noexcept;
+    value_type& operator[](size_t i);
+    value_type  operator[](size_t i) const;
     virtual void push_back(value_type value, Ref ref);
     virtual size_t size() const;
     virtual string toString() const;
@@ -156,6 +162,66 @@ string Vector<T>::toString() const{
     }
     oss << "]";
     return oss.str();
+}
+
+template <typename T>
+Vector<T>::Vector(const Vector<T>& other) : m_capacity(0), m_size(0), m_data(nullptr) {
+    shared_lock<shared_mutex> lock(other.m_mtx);
+    m_capacity = other.m_capacity;
+    m_size     = other.m_size;
+    m_data     = new Node[m_capacity];
+    for (size_t i = 0; i < m_size; ++i)
+        m_data[i] = other.m_data[i];
+}
+
+template <typename T>
+Vector<T>::Vector(Vector<T>&& other) noexcept
+    : m_capacity(other.m_capacity), m_size(other.m_size), m_data(other.m_data) {
+    other.m_capacity = 0;
+    other.m_size     = 0;
+    other.m_data     = nullptr;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator=(const Vector<T>& other) {
+    if (this != &other) {
+        shared_lock<shared_mutex> srcLock(other.m_mtx);
+        unique_lock<shared_mutex> dstLock(m_mtx);
+        delete[] m_data;
+        m_capacity = other.m_capacity;
+        m_size     = other.m_size;
+        m_data     = new Node[m_capacity];
+        for (size_t i = 0; i < m_size; ++i)
+            m_data[i] = other.m_data[i];
+    }
+    return *this;
+}
+
+template <typename T>
+Vector<T>& Vector<T>::operator=(Vector<T>&& other) noexcept {
+    if (this != &other) {
+        unique_lock<shared_mutex> lock(m_mtx);
+        delete[] m_data;
+        m_capacity       = other.m_capacity;
+        m_size           = other.m_size;
+        m_data           = other.m_data;
+        other.m_capacity = 0;
+        other.m_size     = 0;
+        other.m_data     = nullptr;
+    }
+    return *this;
+}
+
+template <typename T>
+typename Vector<T>::value_type& Vector<T>::operator[](size_t i) {
+    shared_lock<shared_mutex> lock(m_mtx);
+    return m_data[i].getDataRef();
+}
+
+template <typename T>
+typename Vector<T>::value_type Vector<T>::operator[](size_t i) const {
+    shared_lock<shared_mutex> lock(m_mtx);
+    return m_data[i].getData();
 }
 
 template <typename T>
