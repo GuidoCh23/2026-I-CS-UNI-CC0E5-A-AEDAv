@@ -118,11 +118,12 @@ protected:
     }
 
     // Codigo hecho en clase - adaptado con Ref y branch corregido para orden ascendente
-    virtual void internal_insert(Node*& pNode, const value_type& data, Ref ref) {
-        if (!pNode) { pNode = new Node(data, ref); return; }
+    virtual Node* internal_insert(Node* pNode, const value_type& data, Ref ref) {
+        if (!pNode) return new Node(data, ref);
         // m_comp(current, new): true -> new es mayor -> va a la derecha (branch 1)
         auto branch = m_comp(pNode->m_data, data);
-        internal_insert(pNode->m_pChild[branch], data, ref);
+        pNode->m_pChild[branch] = internal_insert(pNode->m_pChild[branch], data, ref);
+        return pNode;
     }
 
     // BinaryTree: Otras mejoras libres #1 - busqueda BST con equivalencia generica
@@ -214,7 +215,7 @@ public:
     // BinaryTree: Concurrencia
     virtual void insert(const value_type& data, Ref ref) {
         unique_lock<shared_mutex> lock(m_mtx);
-        internal_insert(m_pRoot, data, ref);
+        m_pRoot = internal_insert(m_pRoot, data, ref);
         ++m_size;
     }
 
