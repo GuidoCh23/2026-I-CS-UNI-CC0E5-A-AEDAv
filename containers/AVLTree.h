@@ -9,7 +9,7 @@ using namespace std;
 // AVL: Extender BinaryTreeNode para tener la altura - AVLNode hereda BinaryTreeNode<T, AVLNode<T>> + m_height
 template<typename T>
 struct AVLNode : BinaryTreeNode<T, AVLNode<T>> {
-    int m_height;
+    size_t m_height;
     AVLNode(T data, Ref ref = 0)
         : BinaryTreeNode<T, AVLNode<T>>(data, ref), m_height(1) {}
 };
@@ -40,7 +40,7 @@ protected:
         pNode = Base::internal_insert(pNode, data, ref);
         update_height(pNode);
 
-        int bf = balance(pNode);
+        Ref bf = balance(pNode);
 
         // Left-Left -> rotacion derecha simple
         if (bf > 1  && !this->m_comp(pNode->m_pChild[0]->m_data, data))
@@ -72,10 +72,10 @@ protected:
     }
 
 private:
-    int node_height(Node* n) const { return n ? n->m_height : 0; }
+    size_t node_height(Node* n) const { return n ? n->m_height : 0; }
 
-    int balance(Node* n) const {
-        return n ? node_height(n->m_pChild[0]) - node_height(n->m_pChild[1]) : 0;
+    Ref balance(Node* n) const {
+        return n ? (Ref)node_height(n->m_pChild[0]) - (Ref)node_height(n->m_pChild[1]) : 0;
     }
 
     void update_height(Node* n) {
@@ -84,8 +84,8 @@ private:
     }
 
     // AVL: dir=1 -> right, dir=0 -> left - unifica rotate_right y rotate_left
-    Node* rotate(Node* node, int dir) {
-        int   opp    = 1 - dir;
+    Node* rotate(Node* node, size_t dir) {
+        size_t opp = 1 - dir;
         Node* pivot  = node->m_pChild[opp];
         Node* middle = pivot->m_pChild[dir];
         pivot->m_pChild[dir] = node;

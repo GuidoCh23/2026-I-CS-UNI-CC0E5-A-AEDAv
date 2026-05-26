@@ -134,7 +134,7 @@ protected:
         return internal_search(pNode->m_pChild[1], val);
     }
 
-    int internal_height(Node* pNode) const {
+    Ref internal_height(Node* pNode) const {
         if (!pNode) return -1;
         return 1 + max(internal_height(pNode->m_pChild[0]),
                        internal_height(pNode->m_pChild[1]));
@@ -174,10 +174,10 @@ protected:
     }
 
     // BinaryTree: Otras mejoras libres #2 - impresion visual indentada
-    void internal_print(Node* pNode, ostream& os, int depth) const {
+    void internal_print(Node* pNode, ostream& os, size_t depth) const {
         if (!pNode) return;
         internal_print(pNode->m_pChild[1], os, depth + 1);
-        for (int i = 0; i < depth; ++i) os << "  ";
+        for (size_t i = 0; i < depth; ++i) os << "  ";
         os << "(" << pNode->m_data << "," << pNode->m_ref << ")\n";
         internal_print(pNode->m_pChild[0], os, depth + 1);
     }
@@ -225,7 +225,7 @@ public:
         return internal_search(m_pRoot, val) != nullptr;
     }
 
-    int height() const {
+    Ref height() const {
         shared_lock<shared_mutex> lock(m_mtx);
         return internal_height(m_pRoot);
     }
