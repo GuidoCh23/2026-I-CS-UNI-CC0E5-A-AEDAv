@@ -4,12 +4,13 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <mutex>
 #include <shared_mutex>
 #include <algorithm>
-#include "stack.h"
+using namespace std;
 #include "traits.h"
 #include "../types.h"
-using namespace std;
 
 // BinaryTree: BinaryTreeNode con CRTP (mismo patron que LLNode), value_type y Ref
 template<typename T, typename DerivedNode = void>
@@ -25,14 +26,14 @@ struct BinaryTreeNode {
     Ref getRef()     { return m_ref; }
 };
 
-// BinaryTree: BTIteratorBase con Stack<Node*> pre-llenado e indice
+// BinaryTree: BTIteratorBase con vector<Node*> pre-llenado e indice
 template<typename Node, typename value_type>
 class BTIteratorBase {
 protected:
-    Stack<Node*> m_nodes;
+    vector<Node*> m_nodes;
     size_t       m_index;
 public:
-    BTIteratorBase(Stack<Node*> nodes, size_t index)
+    BTIteratorBase(vector<Node*> nodes, size_t index)
         : m_nodes(move(nodes)), m_index(index) {}
     bool operator==(const BTIteratorBase& o) const { return m_index == o.m_index; }
     bool operator!=(const BTIteratorBase& o) const { return m_index != o.m_index; }
@@ -141,35 +142,35 @@ protected:
     }
 
     // BinaryTree: forward/backward iterator (inorder) - recorrido LNR
-    void fill_inorder(Node* pNode, Stack<Node*>& s) const {
+    void fill_inorder(Node* pNode, vector<Node*>& s) const {
         if (!pNode) return;
         fill_inorder(pNode->m_pChild[0], s);
-        s.push(pNode);
+        s.push_back(pNode);
         fill_inorder(pNode->m_pChild[1], s);
     }
 
     // BinaryTree: forward/backward iterator (preorder) - recorrido NLR
-    void fill_preorder(Node* pNode, Stack<Node*>& s) const {
+    void fill_preorder(Node* pNode, vector<Node*>& s) const {
         if (!pNode) return;
-        s.push(pNode);
+        s.push_back(pNode);
         fill_preorder(pNode->m_pChild[0], s);
         fill_preorder(pNode->m_pChild[1], s);
     }
 
     // BinaryTree: forward/backward iterator (postorder) - recorrido LRN
-    void fill_postorder(Node* pNode, Stack<Node*>& s) const {
+    void fill_postorder(Node* pNode, vector<Node*>& s) const {
         if (!pNode) return;
         fill_postorder(pNode->m_pChild[0], s);
         fill_postorder(pNode->m_pChild[1], s);
-        s.push(pNode);
+        s.push_back(pNode);
     }
 
-    View make_view(Stack<Node*> nodes) const {
+    View make_view(vector<Node*> nodes) const {
         size_t n = nodes.size();
         FwdIt fwd_b(nodes, 0);
-        FwdIt fwd_e(Stack<Node*>(), n);
+        FwdIt fwd_e(vector<Node*>(), n);
         BwdIt bwd_b(nodes, n > 0 ? n - 1 : SIZE_MAX);
-        BwdIt bwd_e(Stack<Node*>(), SIZE_MAX);
+        BwdIt bwd_e(vector<Node*>(), SIZE_MAX);
         return View(fwd_b, fwd_e, bwd_b, bwd_e);
     }
 
@@ -238,19 +239,19 @@ public:
     // BinaryTree: usar en bucle nativo foreach (begin/end devuelven iterador inorder)
     FwdIt begin() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        Stack<Node*> s;
+        vector<Node*> s;
         fill_inorder(m_pRoot, s);
         return FwdIt(move(s), 0);
     }
     FwdIt end() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        return FwdIt(Stack<Node*>(), m_size);
+        return FwdIt(vector<Node*>(), m_size);
     }
 
     // BinaryTree: forward/backward iterator (inorder)
     View inorder() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        Stack<Node*> s;
+        vector<Node*> s;
         fill_inorder(m_pRoot, s);
         return make_view(move(s));
     }
@@ -258,7 +259,7 @@ public:
     // BinaryTree: forward/backward iterator (preorder)
     View preorder() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        Stack<Node*> s;
+        vector<Node*> s;
         fill_preorder(m_pRoot, s);
         return make_view(move(s));
     }
@@ -266,7 +267,7 @@ public:
     // BinaryTree: forward/backward iterator (postorder)
     View postorder() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        Stack<Node*> s;
+        vector<Node*> s;
         fill_postorder(m_pRoot, s);
         return make_view(move(s));
     }
@@ -276,7 +277,7 @@ public:
         shared_lock<shared_mutex> lock(m_mtx);
         ostringstream oss;
         oss << "[";
-        Stack<Node*> s;
+        vector<Node*> s;
         fill_inorder(m_pRoot, s);
         for (size_t i = 0; i < s.size(); ++i) {
             if (i > 0) oss << ",";
