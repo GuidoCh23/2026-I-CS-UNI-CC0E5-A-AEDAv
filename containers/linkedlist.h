@@ -33,10 +33,12 @@ public:
 };
 
 // Linked List Node
-template <typename T>
+template <typename T, typename NodeType = void>
 class LLNode{
+public:
+    using value_type = T;
 protected:
-    using Node = NodeType;
+    using Node = conditional_t<is_void_v<NodeType>, LLNode<T>, NodeType>;
 private:
     T   m_data;
     Ref m_ref;
@@ -52,7 +54,7 @@ public:
     void   setData(T data) { m_data = data; }
     Ref    getRef() const  { return m_ref; }
     void   setRef(Ref ref) { m_ref = ref; }
-    Node*  ngetNext() const { return m_next; }
+    Node*  getNext() const { return m_next; }
     Node*& getNextRef()    { return m_next; }
     void   setNext(Node *next) { m_next = next; }
 };
