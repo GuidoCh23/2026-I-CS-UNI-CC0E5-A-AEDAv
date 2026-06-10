@@ -1,6 +1,5 @@
 #include <cstddef>
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <thread>
 #include "vector.h"
@@ -18,7 +17,8 @@ void Add(T& n, T value){
 }
 
 void DemoVector(){
-    Vector<T1> v1(3);
+    // Tarea Heaps: Adaptar Vector a Trait - uso de AscendingVectorTrait
+    Vector<AscendingVectorTrait<T1>> v1(3);
     v1.push_back(1, 11);
     v1.push_back(2, 22);
     v1.push_back(-1, -15);
@@ -32,10 +32,11 @@ void DemoVector(){
     //           =========
     //                cout << endl;
 
-    Vector<string> v2(10);
-    v2.push_back("Hola", 5);
-    v2.push_back("Mundo", 6);
-    v2.push_back("!", 1);
+    // Tarea Heaps: Adaptar Vector a Trait - segundo vector con AscendingVectorTrait
+    Vector<AscendingVectorTrait<T1>> v2(10);
+    v2.push_back(100, 5);
+    v2.push_back(200, 6);
+    v2.push_back(300, 1);
     cout << v2 << endl;
     cout << v2.toString() << endl;
 
@@ -56,7 +57,7 @@ void DemoVector(){
     cout << endl;
 
     Print(v2, cout);
-    ForEach(v2, Add<string>, string("XYZ"));
+    ForEach(v2, Add<T1>, T1(10));
     cout << v2 << endl;
 
     Print(v1, of);
@@ -65,7 +66,8 @@ void DemoVector(){
 
 // DemoConcurrentVector
 void DemoConcurrentVector(){
-    Vector<T1> v(4);
+    // Tarea Heaps: Adaptar Vector a Trait - uso en demo concurrente
+    Vector<AscendingVectorTrait<T1>> v(4);
     v.push_back(0, 0);
     v.push_back(0, 0);
     v.push_back(0, 0);

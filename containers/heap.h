@@ -10,6 +10,7 @@
 #include <utility>
 #include "../types.h"
 #include "traits.h"
+#include "vector.h"
 using namespace std;
 
 // HeapNode - nodo del heap, compatible con BaseTrait
@@ -27,7 +28,7 @@ struct HeapNode {
 
 // Tarea Heaps: Adaptar Vector a Trait
 // MinHeapTrait y MaxHeapTrait usan BaseTrait<HeapNode<T>, Comp>
-// El arreglo interno de Heap usa Trait::Node como tipo de elemento
+// El almacenamiento interno del Heap es Vector<Trait>, reutilizando Vector adaptado
 template<typename T>
 struct MinHeapTrait : public BaseTrait<HeapNode<T>, less<T>> {};
 
@@ -43,19 +44,10 @@ public:
     using MySelf     = Heap<Trait>;
 
 private:
-    Node   *m_data;
-    size_t  m_size;
-    size_t  m_capacity;
+    // Tarea Heaps: Adaptar Vector a Trait - Vector<Trait> como almacenamiento interno
+    Vector<Trait>        m_vec;
     Comp                 m_comp;
     mutable shared_mutex m_mtx;
-
-    void resize() {
-        m_capacity = m_capacity * 2;
-        Node *nd   = new Node[m_capacity];
-        for (size_t i = 0; i < m_size; ++i) nd[i] = m_data[i];
-        delete[] m_data;
-        m_data = nd;
-    }
 
     // indices del heap implicito en arreglo
     size_t parent(size_t i) const { return (i - 1) / 2; }
@@ -63,14 +55,14 @@ private:
     size_t right(size_t i)  const { return 2 * i + 2;   }
 
     void swap_nodes(size_t i, size_t j) {
-        Node tmp  = m_data[i];
-        m_data[i] = m_data[j];
-        m_data[j] = tmp;
+        Node tmp  = m_vec[i];
+        m_vec[i]  = m_vec[j];
+        m_vec[j]  = tmp;
     }
 
     // Tarea Heaps: heapifyUp
     void heapifyUp(size_t i) {
-        while (i > 0 && m_comp(m_data[i].m_data, m_data[parent(i)].m_data)) {
+        while (i > 0 && m_comp(m_vec[i].m_data, m_vec[parent(i)].m_data)) {
             swap_nodes(i, parent(i));
             i = parent(i);
         }
@@ -78,54 +70,47 @@ private:
 
     // Tarea Heaps: heapifyDown
     void heapifyDown(size_t i) {
+        size_t sz   = m_vec.size();
         size_t best = i;
         size_t l    = left(i);
         size_t r    = right(i);
-        if (l < m_size && m_comp(m_data[l].m_data, m_data[best].m_data)) best = l;
-        if (r < m_size && m_comp(m_data[r].m_data, m_data[best].m_data)) best = r;
+        if (l < sz && m_comp(m_vec[l].m_data, m_vec[best].m_data)) best = l;
+        if (r < sz && m_comp(m_vec[r].m_data, m_vec[best].m_data)) best = r;
         if (best != i) { swap_nodes(i, best); heapifyDown(best); }
     }
 
 public:
-    // constructores
-    Heap(size_t capacity = 16)
-        : m_data(new Node[capacity]), m_size(0), m_capacity(capacity), m_comp() {}
+    Heap(size_t capacity = 16) : m_vec(capacity), m_comp() {}
 
-    Heap(const Heap& other) : m_data(nullptr), m_size(0), m_capacity(0), m_comp() {
+    Heap(const Heap& other) : m_vec(), m_comp() {
         shared_lock<shared_mutex> lock(other.m_mtx);
-        m_capacity = other.m_capacity;
-        m_size     = other.m_size;
-        m_data     = new Node[m_capacity];
-        for (size_t i = 0; i < m_size; ++i) m_data[i] = other.m_data[i];
+        m_vec = other.m_vec;
     }
 
-    Heap(Heap&& other) noexcept : m_data(nullptr), m_size(0), m_capacity(0), m_comp() {
+    Heap(Heap&& other) noexcept : m_vec(), m_comp() {
         unique_lock<shared_mutex> lock(other.m_mtx);
-        m_capacity = exchange(other.m_capacity, size_t{0});
-        m_size     = exchange(other.m_size,     size_t{0});
-        m_data     = exchange(other.m_data,     nullptr);
+        m_vec = move(other.m_vec);
     }
 
-    virtual ~Heap() { delete[] m_data; }
+    virtual ~Heap() {}
 
     // Tarea Heaps: insert
     void insert(value_type value, Ref ref) {
         unique_lock<shared_mutex> lock(m_mtx);
-        if (m_size == m_capacity) resize();
-        m_data[m_size] = Node(value, ref);
-        heapifyUp(m_size);
-        ++m_size;
+        m_vec.push_back(value, ref);
+        heapifyUp(m_vec.size() - 1);
     }
 
     // Tarea Heaps: extract
     // Extrae el elemento de mayor o menor prioridad (depende del heap)
     tuple<value_type, Ref> extract() {
         unique_lock<shared_mutex> lock(m_mtx);
-        if (m_size == 0) throw runtime_error("heap vacio");
-        auto result = make_tuple(m_data[0].m_data, m_data[0].m_ref);
-        m_data[0]   = m_data[m_size - 1];
-        --m_size;
-        if (m_size > 0) heapifyDown(0);
+        if (m_vec.size() == 0) throw runtime_error("heap vacio");
+        auto result  = make_tuple(m_vec[0].m_data, m_vec[0].m_ref);
+        size_t last  = m_vec.size() - 1;
+        m_vec[0]     = m_vec[last];
+        m_vec.pop_back();
+        if (m_vec.size() > 0) heapifyDown(0);
         return result;
     }
 
@@ -134,35 +119,37 @@ public:
     // sin removerlo
     tuple<value_type, Ref> peek() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        if (m_size == 0) throw runtime_error("heap vacio");
-        return make_tuple(m_data[0].m_data, m_data[0].m_ref);
+        if (m_vec.size() == 0) throw runtime_error("heap vacio");
+        return make_tuple(m_vec[0].m_data, m_vec[0].m_ref);
     }
 
-    bool   isEmpty() const { shared_lock<shared_mutex> lock(m_mtx); return m_size == 0; }
-    size_t size()    const { shared_lock<shared_mutex> lock(m_mtx); return m_size; }
+    bool   isEmpty() const { shared_lock<shared_mutex> lock(m_mtx); return m_vec.size() == 0; }
+    size_t size()    const { shared_lock<shared_mutex> lock(m_mtx); return m_vec.size(); }
 
     template<typename Func, typename... Args>
     void forEach(Func func, Args&&... args) {
         shared_lock<shared_mutex> lock(m_mtx);
-        for (size_t i = 0; i < m_size; ++i)
-            func(m_data[i].m_data, forward<Args>(args)...);
+        size_t sz = m_vec.size();
+        for (size_t i = 0; i < sz; ++i)
+            func(m_vec[i].m_data, forward<Args>(args)...);
     }
 
-    Node* begin() { return m_data; }
-    Node* end()   { return m_data + m_size; }
+    Node* begin() { return m_vec.data(); }
+    Node* end()   { return m_vec.data() + m_vec.size(); }
 
     // representacion visual del arbol por niveles
     string treeToString() const {
         shared_lock<shared_mutex> lock(m_mtx);
-        if (m_size == 0) return "  (vacio)\n";
+        size_t sz = m_vec.size();
+        if (sz == 0) return "  (vacio)\n";
         ostringstream oss;
         size_t level_start = 0;
         size_t level_size  = 1;
-        while (level_start < m_size) {
+        while (level_start < sz) {
             oss << "  ";
-            size_t end = (level_start + level_size < m_size) ? level_start + level_size : m_size;
+            size_t end = (level_start + level_size < sz) ? level_start + level_size : sz;
             for (size_t i = level_start; i < end; ++i)
-                oss << m_data[i].m_data << " ";
+                oss << m_vec[i].m_data << " ";
             oss << "\n";
             level_start += level_size;
             level_size  *= 2;
@@ -173,11 +160,12 @@ public:
     // Tarea Heaps: toString - formato [(val,ref),...] igual que el resto de contenedores
     string toString() const {
         shared_lock<shared_mutex> lock(m_mtx);
+        size_t sz = m_vec.size();
         ostringstream oss;
         oss << "[";
-        for (size_t i = 0; i < m_size; ++i) {
+        for (size_t i = 0; i < sz; ++i) {
             if (i > 0) oss << ",";
-            oss << m_data[i];
+            oss << m_vec[i];
         }
         oss << "]";
         return oss.str();
