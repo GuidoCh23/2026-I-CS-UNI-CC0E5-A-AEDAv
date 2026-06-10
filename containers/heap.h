@@ -101,12 +101,9 @@ public:
 
     Heap(Heap&& other) noexcept : m_data(nullptr), m_size(0), m_capacity(0), m_comp() {
         unique_lock<shared_mutex> lock(other.m_mtx);
-        m_capacity       = other.m_capacity;
-        m_size           = other.m_size;
-        m_data           = other.m_data;
-        other.m_capacity = 0;
-        other.m_size     = 0;
-        other.m_data     = nullptr;
+        m_capacity = exchange(other.m_capacity, size_t{0});
+        m_size     = exchange(other.m_size,     size_t{0});
+        m_data     = exchange(other.m_data,     nullptr);
     }
 
     virtual ~Heap() { delete[] m_data; }
