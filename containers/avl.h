@@ -50,10 +50,8 @@ protected:
     // AVL: dir=1 -> derecha, dir=0 -> izquierda - unifica rotate_right y rotate_left
     Node* rotate(Node* node, size_t dir) {
         size_t opp = 1 - dir;
-        Node* pivot  = node->m_pChild[opp];
-        Node* middle = pivot->m_pChild[dir];
-        pivot->m_pChild[dir] = node;
-        node->m_pChild[opp]  = middle;
+        Node* pivot = node->m_pChild[opp];
+        node->m_pChild[opp] = exchange(pivot->m_pChild[dir], node);
         update_height(node);
         update_height(pivot);
         return pivot;
