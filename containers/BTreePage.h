@@ -35,12 +35,12 @@ struct tagObjectInfo
 
        keyType                 key;
        ObjIDType               ObjID;
-       long                    UseCounter;
+       size_t                  UseCounter;
        tagObjectInfo(const keyType     &_key, ObjIDType _ObjID)
                : key(_key), ObjID(_ObjID), UseCounter(0) {}
        tagObjectInfo()                          {}
        operator keyType                         ()     { return key; }
-       long                    GetUseCounter() { return UseCounter;    }
+       size_t                  GetUseCounter() { return UseCounter;    }
 };
 
 
@@ -58,12 +58,12 @@ class CBTreePage
        typedef tagObjectInfo<Trait>              ObjectInfo;
 
  public:
-       CBTreePage(int maxKeys, bool unique = true);
+       CBTreePage(size_t maxKeys, bool unique = true);
        virtual ~CBTreePage();
 
        bt_ErrorCode    Insert (const keyType &key, const ObjIDType ObjID);
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
-       bool            Search (const keyType &key, long &ObjID);
+       bool            Search (const keyType &key, ObjIDType &ObjID);
        void            Print  (ostream &os);
        // P1 Tarea ForEach Variadico
        template <typename Func, typename... Args>
@@ -73,14 +73,14 @@ class CBTreePage
        ObjectInfo* FirstThat(Func func, int level, Args&&... args);
 
 protected:
-       int  m_MinKeys; // minimum number of keys in a node
-       int  m_MaxKeys, // maximum number of keys in a node
+       size_t  m_MinKeys; // minimum number of keys in a node
+       size_t  m_MaxKeys, // maximum number of keys in a node
                 m_MaxKeysForChilds; // just to distinguish the root
        bool m_Unique;
        bool m_isRoot;
        vector<ObjectInfo> m_Keys;
        vector<BTPage *>   m_SubPages;
-       int  m_KeyCount;
+       size_t  m_KeyCount;
        void  Create();
        void  Reset ();
        void  Destroy () {   Reset(); delete this;}
@@ -103,18 +103,18 @@ protected:
        bool Overflow()  { return m_KeyCount > m_MaxKeys; }
        bool Underflow() { return m_KeyCount < MinNumberOfKeys(); }
        bool IsFull()    { return m_KeyCount >= m_MaxKeys; }
-       int  MinNumberOfKeys()  { return 2*m_MaxKeys/3.0; }
-       int  GetFreeCells()  { return m_MaxKeys - m_KeyCount; }
-       int& NumberOfKeys()  { return m_KeyCount; }
-       int  GetNumberOfKeys()  { return m_KeyCount; }
+       size_t  MinNumberOfKeys()  { return 2*m_MaxKeys/3.0; }
+       size_t  GetFreeCells()  { return m_MaxKeys - m_KeyCount; }
+       size_t& NumberOfKeys()  { return m_KeyCount; }
+       size_t  GetNumberOfKeys()  { return m_KeyCount; }
        bool IsRoot()  { return m_MaxKeysForChilds != m_MaxKeys; }
-       void SetMaxKeysForChilds(int orderforchilds)
+       void SetMaxKeysForChilds(size_t orderforchilds)
        {
                m_MaxKeysForChilds = orderforchilds;
        }
 
-       int GetFreeCellsOnLeft(int pos);
-       int GetFreeCellsOnRight(int pos);
+       size_t GetFreeCellsOnLeft(int pos);
+       size_t GetFreeCellsOnRight(int pos);
 
 private:
        bool SplitRoot();
@@ -169,7 +169,7 @@ void remove(Container& container, int pos)
 }
 
 template <typename Trait>
-CBTreePage<Trait>:: CBTreePage(int maxKeys, bool unique)
+CBTreePage<Trait>:: CBTreePage(size_t maxKeys, bool unique)
                                        : m_MaxKeys(maxKeys), m_Unique(unique), m_KeyCount(0)
 {
        Create();
@@ -486,7 +486,7 @@ bool CBTreePage<Trait>::SplitRoot()
 }
 
 template <typename Trait>
-bool CBTreePage<Trait>::Search(const keyType &key, long &ObjID)
+bool CBTreePage<Trait>::Search(const keyType &key, ObjIDType &ObjID)
 {
        int pos = binary_search(m_Keys, 0, m_KeyCount, key);
        if( pos >= m_KeyCount ){
@@ -780,7 +780,7 @@ void CBTreePage<Trait>::MovePage(BTPage *pChildPage, vector<ObjectInfo> &tmpKeys
 }
 
 template <typename Trait>
-int CBTreePage<Trait>::GetFreeCellsOnLeft(int pos)
+size_t CBTreePage<Trait>::GetFreeCellsOnLeft(int pos)
 {
        if( pos > 0 )                                   // there is some page on left ?
                return m_SubPages[pos-1]->GetFreeCells();
@@ -788,7 +788,7 @@ int CBTreePage<Trait>::GetFreeCellsOnLeft(int pos)
 }
 
 template <typename Trait>
-int CBTreePage<Trait>::GetFreeCellsOnRight(int pos)
+size_t CBTreePage<Trait>::GetFreeCellsOnRight(int pos)
 {
        if( pos < GetNumberOfKeys() )   // there is some page on right ?
                return m_SubPages[pos+1]->GetFreeCells();
