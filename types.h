@@ -14,4 +14,6 @@ using T1 = int;
 
 using Ref = long;
 
+using Key = char;
+
 #endif // __TYPES_H__

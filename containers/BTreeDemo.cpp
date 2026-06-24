@@ -5,16 +5,16 @@
 #include "BTree.h"
 #include "traits.h"
 
-//const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
-const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
-const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
+//const Key * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
+const Key * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
+const Key * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const Key * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
-const int BTreeSize = 3;
+const size_t BTreeSize = 3;
 void BTreeDemo()
 {
-       int result, i;
-       BTree <BTreeTrait<char>> bt (BTreeSize);
+       size_t result, i;
+       BTree <BTreeTrait<Key>> bt (BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
@@ -46,15 +46,15 @@ void BTreeDemo()
        cout.flush();*/
 
        // P1 Tarea ForEach Variadico
-       int count = 0;
-       bt.ForEach([](auto &info, int level, int *pCount) {
+       size_t count = 0;
+       bt.ForEach([](auto &info, size_t level, size_t *pCount) {
                (*pCount)++;
        }, &count);
        cout << "Total de claves: " << count << endl;
 
        // P1 Tarea FirstThat Variadico
        // Buscamos G
-       auto *found = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+       auto *found = bt.FirstThat([](auto &info, size_t level, Key target) -> decltype(&info) {
                if(info.key == target) return &info;
                return nullptr;
        }, 'G');
@@ -62,7 +62,7 @@ void BTreeDemo()
                cout << found->key << " encontrado con ObjID=" << found->ObjID << endl;
                
        // Buscamos n
-       auto *found2 = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+       auto *found2 = bt.FirstThat([](auto &info, size_t level, Key target) -> decltype(&info) {
                if(info.key == target) return &info;
                return nullptr;
        }, 'n');
@@ -70,7 +70,7 @@ void BTreeDemo()
                cout << found2->key << " encontrado con ObjID=" << found2->ObjID << endl;
 
        // Buscamos E
-       auto *found3 = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+       auto *found3 = bt.FirstThat([](auto &info, size_t level, Key target) -> decltype(&info) {
                if(info.key == target) return &info;
                return nullptr;
        }, 'E');
@@ -86,8 +86,8 @@ void BTreeDemo()
 
 
 
-/*const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
-const char * keys2="CDAMPIWNBKEHOLJYQZFXVRTSGU";
+/*const Key * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
+const Key * keys2="CDAMPIWNBKEHOLJYQZFXVRTSGU";
 const int BTreeSize = 3;
 main (int argc, char * argv)
 {
