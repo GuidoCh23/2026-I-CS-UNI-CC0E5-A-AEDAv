@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include "BTree.h"
+#include "traits.h"
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
 const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
@@ -10,10 +11,10 @@ const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv
 const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
 const int BTreeSize = 3;
-void main(int argc, char * argv[], char * envp[])
+void BTreeDemo()
 {
        int result, i;
-       BTree <char> bt (BTreeSize);
+       BTree <BTreeTrait<char>> bt (BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
@@ -43,7 +44,38 @@ void main(int argc, char * argv[], char * envp[])
        }
        bt.Print(cout);
        cout.flush();*/
-       return 1;
+
+       // P1 Tarea ForEach Variadico
+       int count = 0;
+       bt.ForEach([](auto &info, int level, int *pCount) {
+               (*pCount)++;
+       }, &count);
+       cout << "Total de claves: " << count << endl;
+
+       // P1 Tarea FirstThat Variadico
+       // Buscamos G
+       auto *found = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+               if(info.key == target) return &info;
+               return nullptr;
+       }, 'G');
+       if(found)
+               cout << found->key << " encontrado con ObjID=" << found->ObjID << endl;
+               
+       // Buscamos n
+       auto *found2 = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+               if(info.key == target) return &info;
+               return nullptr;
+       }, 'n');
+       if(found2)
+               cout << found2->key << " encontrado con ObjID=" << found2->ObjID << endl;
+
+       // Buscamos E
+       auto *found3 = bt.FirstThat([](auto &info, int level, char target) -> decltype(&info) {
+               if(info.key == target) return &info;
+               return nullptr;
+       }, 'E');
+       if(found3)
+               cout << found3->key << " encontrado con ObjID=" << found3->ObjID << endl;
 }
 
 
