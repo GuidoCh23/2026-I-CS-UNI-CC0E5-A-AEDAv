@@ -47,6 +47,23 @@ public:
        }
        ForwardIterator end() { return ForwardIterator(); }
 
+       // Examen Final Backward Iterator
+       class BackwardIterator : public snapshot_iterator<ObjectInfo> {
+       public:
+              using snapshot_iterator<ObjectInfo>::snapshot_iterator;
+              BackwardIterator& operator++() { this->Advance(); return *this; }
+       };
+
+       BackwardIterator rbegin() {
+              auto snap = std::make_shared<std::vector<ObjectInfo>>();
+              m_Root.ForEach([](auto& info, size_t, auto* v) {
+                     v->push_back(info);
+              }, (size_t)0, snap.get());
+              std::reverse(snap->begin(), snap->end());
+              return BackwardIterator(snap, 0);
+       }
+       BackwardIterator rend() { return BackwardIterator(); }
+
 public:
        BTree(size_t order = DEFAULT_BTREE_ORDER, bool unique = true);
        ~BTree();
@@ -66,6 +83,10 @@ public:
 
        template <typename Func, typename... Args>
        ObjectInfo* FirstThat(Func func, Args&&... args);
+
+       // Examen Final Backward Iterator
+       template <typename Func, typename... Args>
+       void ReverseForEach(Func func, Args&&... args);
        //typedef               ObjectInfo iterator;
 
 protected:
@@ -148,6 +169,14 @@ BTree<Trait>::FirstThat(Func func, Args&&... args)
               if (r) return r;
        }
        return nullptr;
+}
+
+template <typename Trait>
+template <typename Func, typename... Args>
+void BTree<Trait>::ReverseForEach(Func func, Args&&... args)
+{
+       for (auto it = rbegin(); it != rend(); ++it)
+              func(*it, (size_t)0, std::forward<Args>(args)...);
 }
 
 // Examen Final Operator<<
