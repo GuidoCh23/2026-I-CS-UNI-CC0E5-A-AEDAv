@@ -65,7 +65,6 @@ class CBTreePage
        bt_ErrorCode    Insert (const keyType &key, const ObjIDType ObjID);
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
        bool            Search (const keyType &key, ObjIDType &ObjID);
-       void            Print  (ostream &os);
        // P1 Tarea ForEach Variadico
        template <typename Func, typename... Args>
        void ForEach(Func func, size_t level, Args&&... args);
@@ -716,22 +715,6 @@ CBTreePage<Trait>::GetFirstObjectInfo()
        if( m_SubPages[0] )
                return m_SubPages[0]->GetFirstObjectInfo();
        return m_Keys[0];
-}
-
-// Deben eliminarlo e imprimir con un ForEach
-template <typename Trait>
-void Print(tagObjectInfo<Trait> &info, size_t level, void *pExtra)
-{
-        ostream &os = *(ostream *)pExtra;
-        for( size_t i = 0; i < level ; i++)
-                os << "\t";
-        os << info.key << "->" << info.ObjID << "\n";
-}
-
-template <typename Trait>
-void CBTreePage<Trait>::Print(ostream & os)
-{
-       ForEach(::Print<Trait>, 0, &os);
 }
 
 template <typename Trait>

@@ -42,7 +42,6 @@ public:
        size_t          height() { return m_Height;      }
        size_t          GetOrder() { return m_Order;     }
 
-       void            Print (ostream &os);
        // P1 Tarea ForEach Variadico
        template <typename Func, typename... Args>
        void ForEach(Func func, Args&&... args);
@@ -128,10 +127,6 @@ BTree<Trait>::FirstThat(Func func, Args&&... args)
        return m_Root.FirstThat(func, 0, std::forward<Args>(args)...);
 }
 
-template <typename Trait>
-void BTree<Trait>::Print(ostream &os){
-       m_Root.Print(os);
-}
 
 
 

@@ -21,7 +21,11 @@ void BTreeDemo()
                result = bt.Insert(keys1[i], i*i);
                //bt.Print(cout);
        }
-       bt.Print(cout);
+       // Examen Final Eliminar Print -> ForEach
+       bt.ForEach([](auto &info, size_t level, ostream *os){
+               for(size_t i = 0; i < level; i++) *os << "\t";
+               *os << info.key << "->" << info.ObjID << "\n";
+       }, &cout);
        /*for (i = 0; keys2[i]; i++)
        {
                cout << "Searching " << keys2[i] << " ";
