@@ -132,11 +132,20 @@ template <typename Trait>
 ostream& operator<<(ostream& os, BTree<Trait>& bt){
        bt.ForEach([](auto &info, size_t level, ostream *os){
                for(size_t i = 0; i < level; i++) *os << "\t";
-               *os << info.key << "->" << info.ObjID << "\n";
+               *os << info.key << " " << info.ObjID << "\n";
        }, &os);
        return os;
 }
 
+// Examen Final Operator>>
+template <typename Trait>
+istream& operator>>(istream& is, BTree<Trait>& bt){
+       typename Trait::KeyType   key;
+       typename Trait::ObjIDType ObjID;
+       while(is >> key >> ObjID)
+               bt.Insert(key, ObjID);
+       return is;
+}
 
 
 
