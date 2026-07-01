@@ -18,10 +18,12 @@ struct DescendingTrait : public BaseTrait<_Node, greater<typename _Node::value_t
 };
 
 // P1 Tarea Traits
-template <typename _KeyType, typename _ObjIDType = Ref>
+// Examen Final Comp flexible
+template <typename _KeyType, typename _ObjIDType, typename _Comp>
 struct BTreeTrait {
     using KeyType   = _KeyType;
     using ObjIDType = _ObjIDType;
+    using Comp      = _Comp;
 };
 
 #endif // __TRAITS_H__

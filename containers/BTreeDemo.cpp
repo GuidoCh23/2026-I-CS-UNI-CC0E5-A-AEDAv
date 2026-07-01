@@ -14,7 +14,7 @@ const size_t BTreeSize = 3;
 void BTreeDemo()
 {
        size_t result, i;
-       BTree <BTreeTrait<Key>> bt (BTreeSize);
+       BTree <BTreeTrait<Key, Ref, less<Key>>> bt (BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
