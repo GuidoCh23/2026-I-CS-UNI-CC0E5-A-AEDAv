@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include "BTreePage.h"
 #include "general_iterator.h"
 
@@ -92,6 +94,8 @@ protected:
        size_t          m_Order;   // order of tree
        size_t          m_NumKeys; // number of keys
        bool            m_Unique;  // Accept the elements only once ?
+       // Examen Final Concurrencia
+       mutable shared_mutex m_mtx;
 };
 
 const size_t MaxHeight = 5;
@@ -114,6 +118,7 @@ BTree<Trait>::~BTree()
 template <typename Trait>
 bool BTree<Trait>::Insert(const keyType key, const ObjIDType ObjID)
 {
+       unique_lock<shared_mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Insert(key, ObjID);
        if( error == bt_duplicate )
                return false;
@@ -129,6 +134,7 @@ bool BTree<Trait>::Insert(const keyType key, const ObjIDType ObjID)
 template <typename Trait>
 bool BTree<Trait>::Remove (const keyType key, const ObjIDType ObjID)
 {
+       unique_lock<shared_mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Remove(key, ObjID);
        if( error == bt_duplicate || error == bt_nofound )
                return false;
@@ -142,6 +148,7 @@ bool BTree<Trait>::Remove (const keyType key, const ObjIDType ObjID)
 template <typename Trait>
 typename BTree<Trait>::ObjIDType BTree<Trait>::Search (const keyType key)
 {
+       shared_lock<shared_mutex> lock(m_mtx);
        ObjIDType ObjID = -1;
        m_Root.Search(key, ObjID);
        return ObjID;
@@ -152,6 +159,7 @@ template <typename Trait>
 template <typename Func, typename... Args>
 void BTree<Trait>::ForEach(Func func, Args&&... args)
 {
+       shared_lock<shared_mutex> lock(m_mtx);
        for (auto it = begin(); it != end(); ++it)
               func(*it, (size_t)0, std::forward<Args>(args)...);
 }
@@ -161,6 +169,7 @@ template <typename Func, typename... Args>
 typename BTree<Trait>::ObjectInfo *
 BTree<Trait>::FirstThat(Func func, Args&&... args)
 {
+       shared_lock<shared_mutex> lock(m_mtx);
        for (auto it = begin(); it != end(); ++it) {
               auto* r = func(*it, (size_t)0, std::forward<Args>(args)...);
               if (r) return r;
