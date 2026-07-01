@@ -84,9 +84,6 @@ public:
        template <typename Func, typename... Args>
        ObjectInfo* FirstThat(Func func, Args&&... args);
 
-       // Examen Final Backward Iterator
-       template <typename Func, typename... Args>
-       void ReverseForEach(Func func, Args&&... args);
        //typedef               ObjectInfo iterator;
 
 protected:
@@ -169,14 +166,6 @@ BTree<Trait>::FirstThat(Func func, Args&&... args)
               if (r) return r;
        }
        return nullptr;
-}
-
-template <typename Trait>
-template <typename Func, typename... Args>
-void BTree<Trait>::ReverseForEach(Func func, Args&&... args)
-{
-       for (auto it = rbegin(); it != rend(); ++it)
-              func(*it, (size_t)0, std::forward<Args>(args)...);
 }
 
 // Examen Final Operator<<
