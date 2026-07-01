@@ -159,9 +159,10 @@ template <typename Trait>
 template <typename Func, typename... Args>
 void BTree<Trait>::ForEach(Func func, Args&&... args)
 {
-       shared_lock<shared_mutex> lock(m_mtx);
-       for (auto it = begin(); it != end(); ++it)
-              func(*it, (size_t)0, std::forward<Args>(args)...);
+       FirstThat([&](ObjectInfo& info, size_t level) -> ObjectInfo* {
+              func(info, level, std::forward<Args>(args)...);
+              return nullptr;
+       });
 }
 
 template <typename Trait>
