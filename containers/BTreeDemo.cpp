@@ -21,7 +21,7 @@ void BTreeDemo()
                result = bt.Insert(keys1[i], i*i);
                //bt.Print(cout);
        }
-       // Examen Final Operator<<
+       // Examen Final Operator<< y Print
        cout << bt;
        /*for (i = 0; keys2[i]; i++)
        {
