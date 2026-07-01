@@ -4,7 +4,9 @@
 #define BTREE_H
 
 #include <iostream>
+#include <memory>
 #include "BTreePage.h"
+#include "general_iterator.h"
 
 #define DEFAULT_BTREE_ORDER 3
 
@@ -28,6 +30,22 @@ class BTree
 public:
        //typedef ObjectInfo iterator;
        typedef typename BTNode::ObjectInfo      ObjectInfo;
+
+       // Examen Final Forward Iterator
+       class ForwardIterator : public snapshot_iterator<ObjectInfo> {
+       public:
+              using snapshot_iterator<ObjectInfo>::snapshot_iterator;
+              ForwardIterator& operator++() { this->Advance(); return *this; }
+       };
+
+       ForwardIterator begin() {
+              auto snap = std::make_shared<std::vector<ObjectInfo>>();
+              m_Root.ForEach([](auto& info, size_t, auto* v) {
+                     v->push_back(info);
+              }, (size_t)0, snap.get());
+              return ForwardIterator(snap, 0);
+       }
+       ForwardIterator end() { return ForwardIterator(); }
 
 public:
        BTree(size_t order = DEFAULT_BTREE_ORDER, bool unique = true);
@@ -116,7 +134,8 @@ template <typename Trait>
 template <typename Func, typename... Args>
 void BTree<Trait>::ForEach(Func func, Args&&... args)
 {
-       m_Root.ForEach(func, 0, std::forward<Args>(args)...);
+       for (auto it = begin(); it != end(); ++it)
+              func(*it, (size_t)0, std::forward<Args>(args)...);
 }
 
 template <typename Trait>
@@ -124,7 +143,11 @@ template <typename Func, typename... Args>
 typename BTree<Trait>::ObjectInfo *
 BTree<Trait>::FirstThat(Func func, Args&&... args)
 {
-       return m_Root.FirstThat(func, 0, std::forward<Args>(args)...);
+       for (auto it = begin(); it != end(); ++it) {
+              auto* r = func(*it, (size_t)0, std::forward<Args>(args)...);
+              if (r) return r;
+       }
+       return nullptr;
 }
 
 // Examen Final Operator<<

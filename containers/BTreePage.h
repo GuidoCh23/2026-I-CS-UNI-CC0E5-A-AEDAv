@@ -154,8 +154,8 @@ template <typename Container, typename ObjType>
 void insert_at(Container& container, const ObjType &object, size_t pos)
 {
        size_t size = container.size();
-       for(T1 i = size-2 ; i >= pos ; i--)
-               container[i+1] = container[i];
+       for(size_t i = size-1 ; i > pos ; i--)
+               container[i] = container[i-1];
        container[pos] =  object;
 		
 }

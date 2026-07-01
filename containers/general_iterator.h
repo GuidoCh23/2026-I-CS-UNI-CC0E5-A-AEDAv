@@ -1,7 +1,9 @@
 #ifndef __ITERATOR_H__
 #define __ITERATOR_H__
 #include <algorithm>
+#include <memory>
 #include <utility>
+#include <vector>
 
 template <typename Container, class IteratorBase> // 
 class general_iterator
@@ -31,6 +33,25 @@ public:
     typename Container::value_type &operator*(){
         return m_pNode->getDataRef();
     }
+};
+
+// Examen Final Forward Iterator
+template <typename Node>
+class snapshot_iterator {
+    std::shared_ptr<std::vector<Node>> m_data;
+    size_t m_pos;
+protected:
+    void Advance() { ++m_pos; }
+    bool IsEnd() const { return !m_data || m_pos >= m_data->size(); }
+public:
+    snapshot_iterator() : m_pos(0) {}
+    snapshot_iterator(std::shared_ptr<std::vector<Node>> data, size_t pos)
+        : m_data(std::move(data)), m_pos(pos) {}
+    Node& operator*()  { return (*m_data)[m_pos]; }
+    bool operator==(const snapshot_iterator& o) const {
+        return (IsEnd() && o.IsEnd()) || (m_data == o.m_data && m_pos == o.m_pos);
+    }
+    bool operator!=(const snapshot_iterator& o) const { return !(*this == o); }
 };
 
 #endif
