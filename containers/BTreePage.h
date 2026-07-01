@@ -54,6 +54,7 @@ class CBTreePage
 
        using keyType   = typename Trait::KeyType;
        using ObjIDType = typename Trait::ObjIDType;
+       using Comp      = typename Trait::Comp;
 
        typedef CBTreePage<Trait>                 BTPage;         // useful shorthand
        typedef tagObjectInfo<Trait>              ObjectInfo;
@@ -78,6 +79,7 @@ protected:
                 m_MaxKeysForChilds; // just to distinguish the root
        bool m_Unique;
        bool m_isRoot;
+       Comp m_comp;
        vector<ObjectInfo> m_Keys;
        vector<BTPage *>   m_SubPages;
        size_t  m_KeyCount;
@@ -130,22 +132,22 @@ private:
 
 // Si no lo encuentra, deberia decirme:
 // cual es la posicion donde deberia estar
-template <typename Container, typename ObjType>
-size_t binary_search(Container& container, size_t first, size_t last, ObjType &object)
+template <typename Container, typename ObjType, typename Comp>
+size_t binary_search(Container& container, size_t first, size_t last, ObjType &object, Comp &comp)
 {
        if( first >= last )
                return first;
        while( first < last )
        {
                size_t mid = (first+last)/2;
-               if( object == (ObjType)container[mid ] )
+               if( !comp(object, (ObjType)container[mid]) && !comp((ObjType)container[mid], object) )
                        return mid;
-               if( object > (ObjType)container[mid ] )
+               if( comp((ObjType)container[mid], object) )
                        first = mid+1;
                else
                        last  = mid;
        }
-       if( object <= (ObjType)container[first] )
+       if( !comp((ObjType)container[first], object) )
                return first;
        return last;
 }
@@ -185,10 +187,10 @@ CBTreePage<Trait>::~CBTreePage()
 template <typename Trait>
 bt_ErrorCode CBTreePage<Trait>::Insert(const keyType& key, const ObjIDType ObjID)
 {
-       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key);
+       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key, m_comp);
        bt_ErrorCode error = bt_ok;
 
-       if( pos < m_KeyCount && (keyType)m_Keys[pos] == key && m_Unique)
+       if( pos < m_KeyCount && !m_comp((keyType)m_Keys[pos], key) && !m_comp(key, (keyType)m_Keys[pos]) && m_Unique)
                return bt_duplicate; // this key is duplicate
 
        if( !m_SubPages[pos] ) // this is a leave
@@ -488,20 +490,20 @@ bool CBTreePage<Trait>::SplitRoot()
 template <typename Trait>
 bool CBTreePage<Trait>::Search(const keyType &key, ObjIDType &ObjID)
 {
-       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key);
+       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key, m_comp);
        if( pos >= m_KeyCount ){
                if( m_SubPages[pos] )
                        return m_SubPages[pos]->Search(key, ObjID);
                else
                        return false;
        }
-       if( key == m_Keys[pos].key )
+       if( !m_comp(key, m_Keys[pos].key) && !m_comp(m_Keys[pos].key, key) )
        {
                ObjID = m_Keys[pos].ObjID;
                m_Keys[pos].UseCounter++;
                return true;
        }
-       if( key < m_Keys[pos].key )
+       if( m_comp(key, m_Keys[pos].key) )
                if( m_SubPages[pos] )
                        return m_SubPages[pos]->Search(key, ObjID);
        return false;
@@ -562,8 +564,8 @@ template <typename Trait>
 bt_ErrorCode CBTreePage<Trait>::Remove(const keyType &key, const ObjIDType ObjID)
 {
        bt_ErrorCode error = bt_ok;
-       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key);
-       if( pos < NumberOfKeys() && key == m_Keys[pos].key /*&& m_Keys[pos].m_ObjID == ObjID*/) // We found it !
+       size_t pos = binary_search(m_Keys, 0, m_KeyCount, key, m_comp);
+       if( pos < NumberOfKeys() && !m_comp(key, m_Keys[pos].key) && !m_comp(m_Keys[pos].key, key) /*&& m_Keys[pos].m_ObjID == ObjID*/) // We found it !
        {
                // This is a leave: First
                if( !m_SubPages[pos+1] )  // This is a leave ? FIRST CASE !
@@ -589,7 +591,7 @@ bt_ErrorCode CBTreePage<Trait>::Remove(const keyType &key, const ObjIDType ObjID
        }
        else if( pos == NumberOfKeys() ) // it is not here, go by the last branch
                error = m_SubPages[pos]->Remove(key, ObjID);
-       else if( key <= m_Keys[pos].key ){ // = is because identical keys are inserted on left (see Insert)
+       else if( !m_comp(m_Keys[pos].key, key) ){ // = is because identical keys are inserted on left (see Insert)
                if( m_SubPages[pos] )
                        error = m_SubPages[pos]->Remove(key, ObjID);
                else
