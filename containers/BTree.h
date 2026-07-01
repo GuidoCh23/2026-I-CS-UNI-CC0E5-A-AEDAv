@@ -127,6 +127,15 @@ BTree<Trait>::FirstThat(Func func, Args&&... args)
        return m_Root.FirstThat(func, 0, std::forward<Args>(args)...);
 }
 
+// Examen Final Operator<<
+template <typename Trait>
+ostream& operator<<(ostream& os, BTree<Trait>& bt){
+       bt.ForEach([](auto &info, size_t level, ostream *os){
+               for(size_t i = 0; i < level; i++) *os << "\t";
+               *os << info.key << "->" << info.ObjID << "\n";
+       }, &os);
+       return os;
+}
 
 
 
